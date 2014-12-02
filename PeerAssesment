@@ -1,0 +1,108 @@
+---
+title: "Peer assesment 1"
+output: html_document
+---
+
+I will first load my data 
+```{r}
+activity <- read.csv("~/Downloads/activity.csv")
+```
+
+I know have to make sure the data is in a proceed way so that my reults are adecuate.
+
+```{r, echo=FALSE}
+ head(activity)
+steps <- activity [,1]
+ date <- activity [,2]
+interval <-  activity [,3]
+```
+
+I first notice that there are a lot of Na missing values in the dataset.
+
+I would like to make a lattice histogram to ilustrate the total number of steps taken each day.
+
+```{r,}
+library(lattice)
+ histogram( ~ steps| date, data = activity,
+            xlab = "Height (inches)", type = "density",
+            panel = function(x, ...) {
+                panel.histogram(x, ...)
+                panel.mathdensity(dmath = dnorm, col = "blue",
+                          args = list(mean=mean(x),sd=sd(x))) 
+})
+```
+
+But I will like to calculate the mean and media of everyday to do so i will :
+
+```{r,warning=FALSE}
+library(stats)
+tapply(steps, date, mean )
+tapply(steps, date, median)
+```
+
+The question was:
+
+Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r,warning=FALSE}
+ts <- ts(interval,frequency=5)
+library(ggplot2)
+ xyplot(steps ~ ts, activity,
+        type = "l")
+```
+
+We can see that the maximun is 806 an that corresponds to the  7th 5-minute interval.
+
+There are many missing values but how can I measure that?
+
+```{r,warning=FALSE}
+summary(activity)
+## I can get here in  rows the missing vaulues but if i call the folowing function i will know the percentage.
+ mean (is.na(activity))
+```
+
+Now lets fill those missing values with the 0 value. I will create a duplicate of the activity dataset called nactivity.
+I will name the variables to see the difference from above.
+
+```{r,}
+nactivity <- activity
+nactivity[is.na(nactivity)] <- 0
+mean (is.na(nactivity))
+head(nactivity)
+nsteps <- nactivity [,1]
+ndate <- nactivity [,2]
+ninterval <-  nactivity [,3]
+
+```
+
+Now we have a firstactivity which shows our first data base, and the activity database with the na 's filled in.
+
+Here is our new histogram
+
+```{r,warning=FALSE}
+library(lattice)
+histogram( ~ nsteps | ndate, data = nactivity)
+tapply(nsteps, ndate, mean)
+tapply(nsteps, ndate, median)
+```
+
+If we fill the missing value the data we see will give as less imformation. In this case, there were filled plot squares as na where marked as 0. The 0 value increased a lot making our data noisier.
+
+```{r,warning=FALSE,R.options=FALSE,echo=TRUE,prompt=FALSE,render=FALSE}
+date<- as.Date(date, format = "%Y-%m-%d")
+var <- weekdays (date)
+```
+i will create a factor with two levels : 1 weekdays 2 weekends
+
+```{r,warning=FALSE}
+ factor <- var %in% c("domingo","sabado") ##True will mean its weekend and false during the week
+var1 <- as.factor (factor)
+library(lattice)
+ xyplot(nsteps ~ ts | var1, nactivity,
+        type = "l")
+```
+
+We can know see that generally people walk less during the week. I other words, there are more people with 0 values durign the week, and those who walk, walk more during the weekend.
+
